@@ -1,0 +1,50 @@
+name: Windows 10 Docker VM
+
+on:
+  workflow_dispatch:
+
+jobs:
+  win10:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system packages
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release \
+            wget
+
+      - name: Install Docker
+        run: |
+          sudo apt install -y docker.io
+          sudo systemctl enable docker
+          sudo systemctl start docker
+          sudo usermod -aG docker $USER
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt install -y docker-compose
+
+      - name: Verify Docker
+        run: |
+          docker --version
+          docker-compose --version
+
+      - name: Set up Windows 10 container
+        run: |
+          mkdir -p dockercomp
+          cd dockercomp
+          wget -O Win10VLqL.yml https://raw.githubusercontent.com/VLqL069/Win10/7a57fa82a99c1cf3cfaeed17a629d0856061692e/Win10VLqL.yml
+          cat Win10VLqL.yml
+
+      - name: Boot Windows 10
+        run: |
+          cd dockercomp
+          sudo docker-compose -f Win10VLqL.yml up -d
